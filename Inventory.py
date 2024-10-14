@@ -1,4 +1,4 @@
-import csv  # Add this line to import the CSV module
+import csv  
 
 class Inventory:
     def __init__(self, filename):
