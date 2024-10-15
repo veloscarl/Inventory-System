@@ -4,6 +4,7 @@ import os
 import tkinter as tk
 from tkinter import messagebox, ttk
 
+# User Authentication Class
 class UserAuth:
     def __init__(self, users_file):
         self.users_file = users_file
@@ -37,6 +38,7 @@ class UserAuth:
                     return True
         return False
 
+# Inventory Management Class
 class Inventory:
     def __init__(self, inventory_file):
         self.inventory_file = inventory_file
@@ -44,6 +46,24 @@ class Inventory:
             with open(self.inventory_file, mode="w", newline="") as file:
                 writer = csv.writer(file)
                 writer.writerow(["Name", "ID", "Quantity", "Cost"])
+
+    def search_product(self, search_term):
+        search_results = []
+        if not os.path.exists(self.inventory_file):
+            return search_results
+        with open(self.inventory_file, mode="r") as file:
+            reader = csv.reader(file)
+            next(reader)  # Skip header
+            for row in reader:
+                if search_term.lower() in row[0].lower() or search_term in row[1]:
+                    product = {
+                        "name": row[0],
+                        "id": row[1],
+                        "quantity": row[2],
+                        "cost": row[3]
+                    }
+                    search_results.append(product)
+        return search_results            
 
     def add_product(self, name, product_id, quantity, cost):
         with open(self.inventory_file, mode="a", newline="") as file:
@@ -104,6 +124,7 @@ class Inventory:
                 inventory_data.append(product)
         return inventory_data
 
+# Main App Class
 class App:
     def __init__(self, root):
         self.root = root
@@ -112,12 +133,58 @@ class App:
         self.user = None
         self.inventory = None
 
+        # Stack to manage screens
         self.screen_stack = []
 
+        # Configure grid for responsive layout
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
 
+        # Create professional login interface
         self.create_login_ui()
+
+    def search_product_ui(self):
+        search_window = tk.Toplevel(self.root)
+        search_window.title("Search Product")
+
+        form_frame = tk.Frame(search_window, padx=20, pady=20)
+        form_frame.grid(row=0, column=0, padx=10, pady=10)
+
+        tk.Label(form_frame, text="Search Term (Name or ID):").grid(row=0, column=0, padx=10, pady=5, sticky=tk.W)
+        search_entry = tk.Entry(form_frame)
+        search_entry.grid(row=0, column=1, padx=10, pady=5)
+
+        def search_product():
+            search_term = search_entry.get()
+            search_results = self.inventory.search_product(search_term)
+
+        # Create a new window for displaying results
+            results_window = tk.Toplevel(search_window)
+            results_window.title(f"Search Results for '{search_term}'")
+
+            tree = ttk.Treeview(results_window)
+            tree["columns"] = ("Name", "ID", "Quantity", "Cost")
+            tree.column("#0", width=0, stretch=tk.NO)
+            tree.column("Name", anchor=tk.W, width=120)
+            tree.column("ID", anchor=tk.W, width=80)
+            tree.column("Quantity", anchor=tk.W, width=80)
+            tree.column("Cost", anchor=tk.W, width=80)
+
+            tree.heading("#0", text="", anchor=tk.W)
+            tree.heading("Name", text="Name", anchor=tk.W)
+            tree.heading("ID", text="ID", anchor=tk.W)
+            tree.heading("Quantity", text="Quantity", anchor=tk.W)
+            tree.heading("Cost", text="Cost", anchor=tk.W)
+
+            for product in search_results:
+                tree.insert("", tk.END, values=(product["name"], product["id"], product["quantity"], product["cost"]))
+
+            tree.pack(fill=tk.BOTH, expand=True)
+
+        tk.Button(form_frame, text="Search", command=search_product, width=12, bg="#4CAF50", fg="white").grid(row=1, column=0, columnspan=2, pady=10) 
+
+    # Add a Back button to close the search window and go back
+        tk.Button(search_window, text="Back", command=search_window.destroy, width=12, bg="#FF5722", fg="white").grid(row=2, column=0, columnspan=2, pady=10)    
 
     def create_login_ui(self):
         self.clear_window()
@@ -175,8 +242,9 @@ class App:
         tk.Button(button_frame, text="Update Quantity", command=self.update_quantity_ui, width=12, bg="#2196F3", fg="white").grid(row=0, column=1, padx=10)
         tk.Button(button_frame, text="Remove Product", command=self.remove_product_ui, width=12, bg="#F44336", fg="white").grid(row=0, column=2, padx=10)
         tk.Button(button_frame, text="View Inventory", command=self.view_inventory_ui, width=12, bg="#FF9800", fg="white").grid(row=0, column=3, padx=10)
+        tk.Button(button_frame, text="Search Product", command=self.search_product_ui, width=12, bg="#3F51B5", fg="white").grid(row=1, column=0, padx=10)
+        tk.Button(button_frame, text="Log Out", command=self.create_login_ui, width=12, bg="#FF5722", fg="white").grid(row=1, column=1, padx=10)
 
-        tk.Button(button_frame, text="Log Out", command=self.create_login_ui, width=12, bg="#FF5722", fg="white").grid(row=0, column=4, padx=10)
 
     def add_product_ui(self):
         add_window = tk.Toplevel(self.root)
@@ -279,12 +347,14 @@ class App:
 
         tree.pack(fill=tk.BOTH, expand=True)
 
+        # Back button to return to inventory
         tk.Button(view_window, text="Back", command=view_window.destroy, width=12, bg="#FF5722", fg="white").pack(pady=10)
 
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
 
+# Run the application
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
