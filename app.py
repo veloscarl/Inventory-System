@@ -4,7 +4,6 @@ import os
 import tkinter as tk
 from tkinter import messagebox, ttk
 
-# User Authentication Class
 class UserAuth:
     def __init__(self, users_file):
         self.users_file = users_file
@@ -38,7 +37,6 @@ class UserAuth:
                     return True
         return False
 
-# Inventory Management Class
 class Inventory:
     def __init__(self, inventory_file):
         self.inventory_file = inventory_file
@@ -124,7 +122,6 @@ class Inventory:
                 inventory_data.append(product)
         return inventory_data
 
-# Main App Class
 class App:
     def __init__(self, root):
         self.root = root
@@ -133,14 +130,11 @@ class App:
         self.user = None
         self.inventory = None
 
-        # Stack to manage screens
         self.screen_stack = []
 
-        # Configure grid for responsive layout
         self.root.grid_columnconfigure(0, weight=1)
         self.root.grid_columnconfigure(1, weight=1)
 
-        # Create professional login interface
         self.create_login_ui()
 
     def search_product_ui(self):
@@ -183,7 +177,6 @@ class App:
 
         tk.Button(form_frame, text="Search", command=search_product, width=12, bg="#4CAF50", fg="white").grid(row=1, column=0, columnspan=2, pady=10) 
 
-    # Add a Back button to close the search window and go back
         tk.Button(search_window, text="Back", command=search_window.destroy, width=12, bg="#FF5722", fg="white").grid(row=2, column=0, columnspan=2, pady=10)    
 
     def create_login_ui(self):
@@ -347,14 +340,12 @@ class App:
 
         tree.pack(fill=tk.BOTH, expand=True)
 
-        # Back button to return to inventory
         tk.Button(view_window, text="Back", command=view_window.destroy, width=12, bg="#FF5722", fg="white").pack(pady=10)
 
     def clear_window(self):
         for widget in self.root.winfo_children():
             widget.destroy()
 
-# Run the application
 if __name__ == "__main__":
     root = tk.Tk()
     app = App(root)
